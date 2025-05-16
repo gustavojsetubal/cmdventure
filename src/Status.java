@@ -8,7 +8,7 @@ abstract class Status {
     private double shiftVida; // Alteração aditiva por turno à vida causada pelo status
     private double modifierAtk; // Alteração multiplicativa de ataque causado pelo status
     private double modifierRes; // Alteração multiplicativa de resistência causado pelo status
-    private int turnosDecorridos; // Turnos desde que status foi aplicado
+    private int turnosDecorridos = -1; // Turnos desde que status foi aplicado. Começa em -1 pra normalizar o valor após o turno finalizar
     private boolean causaImobilizacao; // Define se o status imobiliza a entidade
     private Map<String, String> textoStatus = new HashMap<>(); // Define as mensagens utilizadas pelo status
 
@@ -27,7 +27,7 @@ abstract class Status {
         this.modifierRes = modifierRes;
         this.causaImobilizacao = causaImobilizacao;
         for (String status : textoStatus){
-            String[] splitStatus = status.split(" || ");
+            String[] splitStatus = status.split(" \\|\\| ");
             this.textoStatus.put(
                     splitStatus[0], // Key
                     splitStatus[1]  // Value

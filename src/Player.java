@@ -8,15 +8,6 @@ abstract class Player extends Entity {
         super(nome, armaAtual);
     }
 
-    abstract class AbilityHandler{
-        // Função: lidar com a habilidade da classe
-
-        protected int cooldownHabilidadeAtual;
-        protected static int cooldownHabilidade;
-        protected abstract boolean usarHabilidade(boolean estado);
-        public abstract boolean tickCooldownHabilidade();
-    }
-
     public boolean defineAction(Entity oponente){
         System.out.println("Escolha sua ação:");
 
@@ -66,23 +57,23 @@ class Guerreiro extends Player {
         this.vidaMaxima = 500;
         this.vidaAtual = vidaMaxima;
         this.baseAtk = 125;
+        this.abilityHandler = new AbilityHandler();
     }
 
 
     // Fúria: habilidade ativa da Classe
-    AbilityHandler abilityHandler = new AbilityHandler();
-    class AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler {
         protected int cooldownHabilidadeAtual = 0;
         protected static int cooldownHabilidade = 1;
 
         protected Status statusHabilidade = null;
         public boolean usarHabilidade(boolean estado) {
             if (estado){ // true indica que a habilidade está sendo ativada
-                if (cooldownHabilidade > 0) { // Se o cooldown estiver ativo
+                if (cooldownHabilidadeAtual > 0) { // Se o cooldown estiver ativo
                     System.out.println("A habilidade falhou!");
                     return false;
                 }
-                cooldownHabilidade = 1;
+                cooldownHabilidadeAtual = cooldownHabilidade;
                 statusHabilidade = statusHandler.addStatus("StatusFuria");
                 statusHandler.printStatusMessage(statusHabilidade, "inicio-efeito");
             } else if (!estado){ // false indica que a habilidade está sendo desativada
@@ -112,23 +103,23 @@ class Ladino extends Player {
         this.vidaMaxima = 300;
         this.vidaAtual = vidaMaxima;
         this.baseAtk = 175;
+        this.abilityHandler = new AbilityHandler();
     }
 
 
     // Evasão: habilidade ativa da Classe
-    AbilityHandler abilityHandler = new AbilityHandler();
-    class AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler{
         protected int cooldownHabilidadeAtual = 0;
-        protected static int cooldownHabilidade = 3;
+        protected static int cooldownHabilidade = 2;
 
         protected Status statusHabilidade = null;
         public boolean usarHabilidade(boolean estado) {
             if (estado){ // true indica que a habilidade está sendo ativada
-                if (cooldownHabilidade > 0) { // Se o cooldown estiver ativo
+                if (cooldownHabilidadeAtual > 0) { // Se o cooldown estiver ativo
                     System.out.println("A habilidade falhou!");
                     return false;
                 }
-                cooldownHabilidade = 3;
+                cooldownHabilidadeAtual = cooldownHabilidade;
                 statusHabilidade = statusHandler.addStatus("StatusEvasao");
                 statusHandler.printStatusMessage(statusHabilidade, "inicio-efeito");
             } else if (!estado){ // false indica que a habilidade está sendo desativada
@@ -158,23 +149,23 @@ class Mago extends Player {
         this.vidaMaxima = 200;
         this.vidaAtual = vidaMaxima;
         this.baseAtk = 250;
+        this.abilityHandler = new AbilityHandler();
     }
 
 
     // Grimório: habilidade ativa da Classe
-    AbilityHandler abilityHandler = new AbilityHandler();
-    class AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler{
         static Random rng = new Random(System.currentTimeMillis());
 
         protected int cooldownHabilidadeAtual = 0;
-        protected static int cooldownHabilidade = 3;
+        protected static int cooldownHabilidade = 2;
 
         protected Status statusHabilidade = null;
-        public boolean usarHabilidade(Boolean estado) {
-            if (cooldownHabilidade > 0) {
+        public boolean usarHabilidade(boolean estado) {
+            if (cooldownHabilidadeAtual > 0) {
                 System.out.println("A habilidade falhou!");
             } else {
-                cooldownHabilidade = 2;
+                cooldownHabilidadeAtual = cooldownHabilidade;
                 System.out.println("[Grimório] " + nome + " prepara uma magia poderosa...");
 
                 int action = 0;

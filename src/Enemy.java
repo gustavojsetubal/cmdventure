@@ -93,7 +93,7 @@ class Boss extends Enemy {
     // Função: delegar atributos e capacidades de inimigos normais
     protected AbilityHandler abilityHandler;
 
-    class AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler{
         protected int cooldownHabilidadeAtual = 0;
         protected static int cooldownHabilidade = 1;
 

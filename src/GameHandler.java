@@ -110,7 +110,7 @@ public class GameHandler {
                         break;
                     }
                 }
-                // jogador.handleStatus(); A resolver
+                jogador.statusHandler.tickStatus();
                 pressEnterToContinue();
                 turnoAtual = Turno.ADVERSARIO;// Passa para a máquina
 
@@ -127,7 +127,7 @@ public class GameHandler {
                         break; // Encerra o loop de batalha
                     }
                 }
-                // adversario.handleStatus(); A resolver
+                adversario.statusHandler.tickStatus();
                 pressEnterToContinue();
                 turnoAtual = Turno.JOGADOR; // Volta para o jogador
                 rodadaAtual++;

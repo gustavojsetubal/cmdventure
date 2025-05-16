@@ -31,6 +31,12 @@ abstract class Entity {
         this.armaAtual = armaAtual;
     }
 
+    interface AbilityHandler{
+        // Função: Preparar a Entidade (quando necessário) pra lidar com uma habilidade
+
+        boolean usarHabilidade(boolean estado);
+        boolean tickCooldownHabilidade();
+    }
 
     // Exibição de cenário de entidade * EXTRAIR
     public void displayEntityScenario(){
@@ -215,6 +221,21 @@ abstract class Entity {
             } else {
                 System.out.println("[DEBUG] Chave de mensagem tem valor nulo.");
             }
+        }
+
+        // Tick de atributo: A FINALIZAR
+        public void tickStatus(){
+            List<Status> removalList = new ArrayList<>();
+            for (Status status : statusList){
+                status.addTurnosDecorridos(); // NÃO FUNCIONANDO
+
+                if (status.getTempoRestante() == 0){
+                    statusHandler.printStatusMessage(status, "fim-efeito");
+                    removalList.add(status);
+                }
+            }
+
+            statusList.removeAll(removalList);
         }
 
         // Tick de atributo
