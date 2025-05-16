@@ -20,7 +20,7 @@ public abstract class Enemy extends Entity {
     protected String generateAction() {
         // Valor total de pesos (não precisa resultar em 1)
         float totalPool = 0;
-        for (Double actionChance : actionBank.values()){
+        for (Double actionChance : this.actionBank.values()){
             totalPool += actionChance;
         }
 
@@ -38,7 +38,8 @@ public abstract class Enemy extends Entity {
     abstract boolean defineAction(Entity oponente);
 }
 
-public class Mob extends Enemy {
+
+class Mob extends Enemy {
     // Função: delegar atributos e capacidades de inimigos normais
 
     // Construtor simples, sem atributos
@@ -87,10 +88,51 @@ public class Mob extends Enemy {
     }
 }
 
+
 class Boss extends Enemy {
     // Função: delegar atributos e capacidades de inimigos normais
+    protected AbilityHandler abilityHandler;
+
+    class AbilityHandler{
+        protected int cooldownHabilidadeAtual = 0;
+        protected static int cooldownHabilidade = 1;
+
+        protected Status statusHabilidade = null;
+        public boolean usarHabilidade(boolean estado) {
+            if (estado){ // true indica que a habilidade está sendo ativada
+                if (cooldownHabilidade > 0) { // Se o cooldown estiver ativo
+                    System.out.println("A habilidade falhou!");
+                    return false;
+                }
+                cooldownHabilidade = 4;
+                statusHabilidade = statusHandler.addStatus("StatusFrenesi");
+                statusHandler.printStatusMessage(statusHabilidade, "inicio-efeito");
+            } else if (!estado){ // false indica que a habilidade está sendo desativada
+                statusHandler.printStatusMessage(statusHabilidade, "fim-efeito");
+                statusHabilidade = null;
+                return GameHandler.jogador.healthHandler.handleDanoRecebido(damageHandler.handleDanoAtual(baseAtk * 2, false));
+            }
+            return false;
+        }
+
+        public boolean tickCooldownHabilidade(){
+            cooldownHabilidadeAtual--;
+            if (cooldownHabilidadeAtual <= 0){
+                cooldownHabilidadeAtual = 0;
+                return true; // Retorna true quando habilidade está disponível
+            }
+            return false; // Retorna falso quando habilidade continua indisponível
+        }
+
+    }
 
     // Alteração no banco de ação
+    Map<String, Double> actionBank = Map.ofEntries(
+            Map.entry("atacar", 0.5),
+            Map.entry("defender", 0.3),
+            Map.entry("curar", 0.1),
+            Map.entry("habilidade", 0.1)
+    );
 
 
     // Construtor simples, sem atributos
@@ -113,6 +155,9 @@ class Boss extends Enemy {
 
             case "curar":
                 return actionHandler.curar();
+
+            case "habilidade":
+                return abilityHandler.usarHabilidade(true);
         }
         return actionHandler.atacar(oponente);
     }

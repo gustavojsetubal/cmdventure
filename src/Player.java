@@ -70,6 +70,7 @@ class Guerreiro extends Player {
 
 
     // Fúria: habilidade ativa da Classe
+    AbilityHandler abilityHandler = new AbilityHandler();
     class AbilityHandler{
         protected int cooldownHabilidadeAtual = 0;
         protected static int cooldownHabilidade = 1;
@@ -115,6 +116,7 @@ class Ladino extends Player {
 
 
     // Evasão: habilidade ativa da Classe
+    AbilityHandler abilityHandler = new AbilityHandler();
     class AbilityHandler{
         protected int cooldownHabilidadeAtual = 0;
         protected static int cooldownHabilidade = 3;
@@ -160,6 +162,7 @@ class Mago extends Player {
 
 
     // Grimório: habilidade ativa da Classe
+    AbilityHandler abilityHandler = new AbilityHandler();
     class AbilityHandler{
         static Random rng = new Random(System.currentTimeMillis());
 
@@ -193,6 +196,15 @@ class Mago extends Player {
                 }
             }
             return false;
+        }
+
+        public boolean tickCooldownHabilidade(){
+            cooldownHabilidadeAtual--;
+            if (cooldownHabilidadeAtual <= 0){
+                cooldownHabilidadeAtual = 0;
+                return true; // Retorna true quando habilidade está disponível
+            }
+            return false; // Retorna falso quando habilidade continua indisponível
         }
 
     }

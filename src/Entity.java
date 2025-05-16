@@ -6,10 +6,10 @@ import java.util.Scanner;
 abstract class Entity {
     // Função: Lidar com atributos da entidade
 
-    protected HealthHandler healthHandler;
-    protected DamageHandler damageHandler;
-    protected ActionHandler actionHandler;
-    protected StatusHandler statusHandler;
+    protected HealthHandler healthHandler = new HealthHandler();
+    protected DamageHandler damageHandler = new DamageHandler();
+    protected ActionHandler actionHandler = new ActionHandler();
+    protected StatusHandler statusHandler = new StatusHandler();
 
     protected String nome;
     protected int vidaAtual;
@@ -76,8 +76,9 @@ abstract class Entity {
             }
 
             // Aplicar dano
-            vidaAtual -= (int) (dmg - (dmg * totalModifierRes));
-            System.out.println(nome + " recebeu " + dmg + " de dano.");
+            int danoCausado = (int) (dmg - (dmg * totalModifierRes));
+            vidaAtual -= danoCausado;
+            System.out.println(nome + " recebeu " + danoCausado + " de dano.");
 
             // Verificar estado da entidade
             if (vidaAtual <= 0) {
@@ -105,7 +106,7 @@ abstract class Entity {
 
         public int handleDanoAtual(int flatAtk, boolean doesWeaponInfluence){
             int totalShiftAtk = 0; // Adição ao ataque atual, computado pré-multiplicadores
-            double totalModifierAtk = 0; // Modificador multiplicativo de ataque total
+            double totalModifierAtk = 1; // Modificador multiplicativo de ataque total
 
             // Calcular aumentos aditivos ao ataque atual
             if (doesWeaponInfluence){ // Se a arma equipada fizer parte do ataque
@@ -116,10 +117,12 @@ abstract class Entity {
 
             // Calcular modificador multiplicativo de ataque atual
             for (Status status : statusList){
-                totalModifierAtk += status.getModifierAtk();
+                totalModifierAtk *= status.getModifierAtk();
             }
 
             // Retornar valor final de dano
+            System.out.println(flatAtk);
+            System.out.println((int) ((flatAtk + totalShiftAtk) * totalModifierAtk));
             return (int) ((flatAtk + totalShiftAtk) * totalModifierAtk);
         }
     }

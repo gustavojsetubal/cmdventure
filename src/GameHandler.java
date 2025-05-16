@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 public class GameHandler {
     public static Player jogador;
-    public static Mob adversario;
+    public static Enemy adversario;
 
     private static Turno turnoAtual;
     private static int salaAtual;
@@ -75,7 +75,7 @@ public class GameHandler {
     }
 
     // Exibição de cenário de jogo
-    public void displayGameScenario(Entity jogador, Mob adversario){
+    public void displayGameScenario(Entity jogador, Enemy adversario){
         jogador.displayEntityScenario();
         adversario.displayEntityScenario();
     }
@@ -83,7 +83,11 @@ public class GameHandler {
 
     public void iniciarSala(){
         // Gerenciar Spawns
-        adversario = Mob.gerarMob(adversario, salaAtual, (salaAtual % 5 == 0));
+        if (salaAtual % 5 == 0){
+            adversario = Boss.SpawnManager.generateMob(null, salaAtual);
+        } else {
+            adversario = Mob.SpawnManager.generateMob(null, salaAtual);
+        }
         emBatalha = true;
 
         // Iniciar batalha
@@ -99,14 +103,14 @@ public class GameHandler {
                 //Turno das ações do jogador
                 System.out.println("Turno: " + turnoAtual);
                 System.out.println();
-                jogador.abilityHandler.tickCooldownHabilidade();
-                if (!jogador.handleIdle()){
-                    if (jogador.defineAction(adversario)){
-                        emBatalha = false;
+                // jogador.abilityHandler.tickCooldownHabilidade();
+                if (!jogador.actionHandler.checkForIdle()){ // Se o jogador não estiver inativo (ou seja, retornar false)
+                    if (jogador.defineAction(adversario)){ // Realizar ação. Se o oponente morrer (true)
+                        emBatalha = false; // Encerra o loop de batalha
                         break;
                     }
                 }
-                jogador.handleStatus();
+                // jogador.handleStatus(); A resolver
                 pressEnterToContinue();
                 turnoAtual = Turno.ADVERSARIO;// Passa para a máquina
 
@@ -115,13 +119,15 @@ public class GameHandler {
                 adversario.defesa = false;
                 System.out.println("Turno: " + turnoAtual);
                 System.out.println("\n");
-                adversario./*tickCooldownHabilidade*/;
-                if (!adversario.handleIdle()){
-                    if (adversario.defineAction(jogador)){
-                        break;
+                if (adversario instanceof Boss){
+                    ((Boss) adversario).abilityHandler.tickCooldownHabilidade();
+                }
+                if (!adversario.actionHandler.checkForIdle()){ // Se o adversário não estiver inativo (ou seja, retornar false)
+                    if (adversario.defineAction(jogador)){ // Realizar ação. Se o oponente morrer (true)
+                        break; // Encerra o loop de batalha
                     }
                 }
-                adversario.handleStatus();
+                // adversario.handleStatus(); A resolver
                 pressEnterToContinue();
                 turnoAtual = Turno.JOGADOR; // Volta para o jogador
                 rodadaAtual++;
