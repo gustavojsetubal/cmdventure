@@ -6,6 +6,7 @@ import java.util.Scanner;
 abstract class Entity {
     // Função: Lidar com atributos da entidade
 
+    protected Entity self = this;
     protected HealthHandler healthHandler = new HealthHandler();
     protected DamageHandler damageHandler = new DamageHandler();
     protected ActionHandler actionHandler = new ActionHandler();
@@ -20,6 +21,7 @@ abstract class Entity {
     protected Arma armaAtual = null;
     protected List<Status> statusList = new ArrayList<>();
 
+
     static Scanner input = new Scanner(System.in).useDelimiter("\n");
 
     // Construtores
@@ -31,25 +33,15 @@ abstract class Entity {
         this.armaAtual = armaAtual;
     }
 
-    interface AbilityHandler{
-        // Função: Preparar a Entidade (quando necessário) pra lidar com uma habilidade
+    interface AbilityHandler {
+        // Função: Preparar a Entidade (quando necessário) para lidar com uma habilidade
 
         boolean usarHabilidade(boolean estado);
         boolean tickCooldownHabilidade();
     }
 
-    // Exibição de cenário de entidade * EXTRAIR
-    public void displayEntityScenario(){
-        try {
-            System.out.println(this.nome + " | " + this.vidaAtual + " / " + this.vidaMaxima + "HP " + this.statusList + " | " + this.baseAtk + " | " + this.armaAtual.getNome() + " (" + this.armaAtual.getRaridade() + "): " + this.armaAtual.getAtkExtra() + " ATK " );
-
-        } catch (NullPointerException error){
-            System.out.println(this.nome + " | " + this.vidaAtual + " / " + this.vidaMaxima + "HP " + this.statusList + " | " + this.baseAtk + " ATK " );
-        }
-    }
-
     // Seleção de ação
-    abstract boolean defineAction(Entity oponente);
+    abstract boolean defineAction();
 
     // Classes auxiliares
     class HealthHandler{
@@ -89,6 +81,7 @@ abstract class Entity {
             // Verificar estado da entidade
             if (vidaAtual <= 0) {
                 System.out.println(nome + " foi derrotado!");
+                BattleHandler.entidadesDerrotadas.add(self);
                 return true; // Retorna true se estiver morto.
             } else {
                 System.out.println(nome + " agora possui " + vidaAtual + " de vida.");

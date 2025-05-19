@@ -2,13 +2,18 @@ import java.util.Random;
 
 abstract class Player extends Entity {
     // Função: atribuir o aspecto de jogabilidade ao jogador
-    protected AbilityHandler abilityHandler;
+    public AbilityHandler abilityHandler;
 
     public Player(String nome, Arma armaAtual) {
         super(nome, armaAtual);
     }
 
-    public boolean defineAction(Entity oponente){
+    // Helper: Seleção de alvo
+    Entity promptTarget(){
+        return BattleHandler.selecaoAlvo(BattleHandler.adversarios);
+    }
+
+    public boolean defineAction(){
         System.out.println("Escolha sua ação:");
 
         // Seleção de ação
@@ -34,7 +39,7 @@ abstract class Player extends Entity {
         System.out.println("\n\n\n");
         switch (escolha){
             case 1:
-                return actionHandler.atacar(oponente);
+                return actionHandler.atacar(promptTarget());
             case 2:
                 return actionHandler.setDefesa(true);
             case 3:
@@ -108,7 +113,7 @@ class Ladino extends Player {
 
 
     // Evasão: habilidade ativa da Classe
-    class AbilityHandler implements Entity.AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler {
         protected int cooldownHabilidadeAtual = 0;
         protected static int cooldownHabilidade = 2;
 
@@ -154,7 +159,7 @@ class Mago extends Player {
 
 
     // Grimório: habilidade ativa da Classe
-    class AbilityHandler implements Entity.AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler {
         static Random rng = new Random(System.currentTimeMillis());
 
         protected int cooldownHabilidadeAtual = 0;
@@ -177,7 +182,7 @@ class Mago extends Player {
 
                 if (action >= 66){
                     System.out.println("[Grimório] " + nome + " dispara uma bola de fogo!");
-                    return GameHandler.adversario.healthHandler.handleDanoRecebido(damageHandler.handleDanoAtual(baseAtk, false));
+                    return promptTarget().healthHandler.handleDanoRecebido(damageHandler.handleDanoAtual(baseAtk, false));
                 } else if (action >= 33){
                     System.out.println("[Grimório] " + nome + " cura suas feridas!");
                     healthHandler.handleCura((int) ((int) vidaMaxima * 0.5));

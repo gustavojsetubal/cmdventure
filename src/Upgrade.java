@@ -23,7 +23,7 @@ public class Upgrade {
         int atributo = (int) (5 + rng.nextInt(20) * rng.nextInt(sala));
 
         if (tipo > 2) {
-            atributo *= (int) (GameHandler.jogador.vidaMaxima * 0.1);
+            atributo *= (int) (Game.jogador.vidaMaxima * 0.1);
             return new Upgrade(NameHandler.generateUpgrade(), 0 , 0, atributo);
         } else if (tipo > 1) {
             return new Upgrade(NameHandler.generateUpgrade(), 0 , atributo, 0);

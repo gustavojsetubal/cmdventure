@@ -5,7 +5,7 @@ abstract class Status {
 
     protected String nome; // Nome do status
     private int duracao; // Duração do status, caso aplicável
-    private double shiftVida; // Alteração aditiva por turno à vida causada pelo status
+    private double shiftVida; // Alteração aditiva por turno à vida causada pelo status todo: Shift Vida tem que aplicar
     private double modifierAtk; // Alteração multiplicativa de ataque causado pelo status
     private double modifierRes; // Alteração multiplicativa de resistência causado pelo status
     private int turnosDecorridos = -1; // Turnos desde que status foi aplicado. Começa em -1 pra normalizar o valor após o turno finalizar
@@ -42,6 +42,10 @@ abstract class Status {
 
     public Map<String, String> getTextoStatus() {
         return textoStatus;
+    }
+
+    public double getShiftVida() {
+        return shiftVida;
     }
 
     public double getModifierAtk() {

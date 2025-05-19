@@ -35,7 +35,7 @@ public abstract class Enemy extends Entity {
         return "atacar";
     }
 
-    abstract boolean defineAction(Entity oponente);
+    abstract boolean defineAction();
 }
 
 
@@ -52,7 +52,8 @@ class Mob extends Enemy {
     }
 
     // Seleciona ação com base no valor gerado aleatóriamente
-    public boolean defineAction(Entity oponente){
+    public boolean defineAction(){
+        Player oponente = BattleHandler.jogador;
         switch(generateAction()) {
             case "atacar":
                 return actionHandler.atacar(oponente);
@@ -93,7 +94,7 @@ class Boss extends Enemy {
     // Função: delegar atributos e capacidades de inimigos normais
     protected AbilityHandler abilityHandler;
 
-    class AbilityHandler implements Entity.AbilityHandler{
+    class AbilityHandler implements Entity.AbilityHandler {
         protected int cooldownHabilidadeAtual = 0;
         protected static int cooldownHabilidade = 1;
 
@@ -110,7 +111,7 @@ class Boss extends Enemy {
             } else if (!estado){ // false indica que a habilidade está sendo desativada
                 statusHandler.printStatusMessage(statusHabilidade, "fim-efeito");
                 statusHabilidade = null;
-                return GameHandler.jogador.healthHandler.handleDanoRecebido(damageHandler.handleDanoAtual(baseAtk * 2, false));
+                return Game.jogador.healthHandler.handleDanoRecebido(damageHandler.handleDanoAtual(baseAtk * 2, false));
             }
             return false;
         }
@@ -145,7 +146,8 @@ class Boss extends Enemy {
     }
 
     // Seleciona ação com base no valor gerado aleatóriamente
-    public boolean defineAction(Entity oponente){
+    public boolean defineAction(){
+        Player oponente = BattleHandler.jogador;
         switch(generateAction()) {
             case "atacar":
                 return actionHandler.atacar(oponente);
