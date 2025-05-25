@@ -9,8 +9,10 @@ public class BattleHandler {
     static Scanner input = new Scanner(System.in).useDelimiter("\n");
 
     public static Player jogador = Game.jogador;
+    public static ArrayList<Entity> grupoJogador = new ArrayList<>(Arrays.asList(jogador));
+    public static ArrayList<Entity> grupoAdversarios = new ArrayList<>();
+
     public static Entity alvo;
-    public static ArrayList<Enemy> adversarios = new ArrayList<>();
 
     protected static ArrayList<Entity> ordemTurno = new ArrayList<>(); // Lista de todas as entidades no combate, controla ordem de turno da batalha
     protected static ArrayList<Entity> entidadesDerrotadas = new ArrayList<>();
@@ -25,8 +27,8 @@ public class BattleHandler {
         ordemTurno.add(jogador);
 
         // Gera um boss a cada 5 salas
-        if (salaAtual % 5 == 0){
-            adversarios.add(Boss.SpawnManager.generateMob(null, salaAtual));
+        if (salaAtual % 1 == 0){
+            grupoAdversarios.add(Boss.SpawnManager.generateMob(null, salaAtual));
         }
 
         // Geração de quantia aleatória de inimigos
@@ -46,64 +48,82 @@ public class BattleHandler {
         }
 
         for (int i = 1;i <= genQTD; i++){
-            adversarios.add(Mob.SpawnManager.generateMob(null, salaAtual));
+            grupoAdversarios.add(Mob.SpawnManager.generateMob(null, salaAtual));
         }
 
         // Adiciona os adversários recém-gerados à ordem de turno
-        ordemTurno.addAll(adversarios);
+        ordemTurno.addAll(grupoAdversarios);
 
         emBatalha = true; // Inicia estado de combate
     }
 
-    // Seleção de alvo
-    public static Entity selecaoAlvo(ArrayList<? extends Entity> oponentes){
-        System.out.println("SELECIONE UM ALVO");
-        int i = 1; // Contagem de iteração
-        for (Entity oponente : oponentes){
-            System.out.println(i + " -> " + oponente);
-            i++;
+    // Seleção de lado de oponente
+    public static ArrayList<Entity> getOpposingTeam(Entity entity){
+        if (entity.getSide().equals(Entity.Side.PLAYER) ){
+            return grupoAdversarios;
+        } else if (entity.getSide().equals(Entity.Side.ENEMY)){
+            return grupoJogador;
         }
-        System.out.println("ou insira 0 para retornar");
 
-        // Validação de escolha de alvo
-        int escolha = 0;
-        boolean escolhaValida = false;
-        while (!escolhaValida){
-            try{
-                escolha = Integer.parseInt(input.next());
-                if (escolha >= 0 && escolha <= oponentes.size()){
-                    escolhaValida = true;
-                } else {
+        return null;
+    }
+
+    // Seleção de alvo
+    public static Entity selecaoAlvo(ArrayList<? extends Entity> oponentes, boolean random){
+        if (!random){
+            System.out.println("SELECIONE UM ALVO");
+            int i = 1; // Contagem de iteração
+            for (Entity oponente : oponentes){
+                System.out.println(i + " -> " + oponente);
+                i++;
+            }
+            System.out.println("ou insira 0 para retornar");
+
+            // Validação de escolha de alvo
+            int escolha = 0;
+            boolean escolhaValida = false;
+            while (!escolhaValida){
+                try{
+                    escolha = Integer.parseInt(input.next());
+                    if (escolha >= 0 && escolha <= oponentes.size()){
+                        escolhaValida = true;
+                    } else {
+                        System.out.println("Opção inválida.");
+                    }
+                } catch (NumberFormatException error){
                     System.out.println("Opção inválida.");
                 }
-            } catch (NumberFormatException error){
-                System.out.println("Opção inválida.");
             }
+
+            alvo = oponentes.get(escolha - 1); // Retorna -1 para sair, 0 em diante para escolha específica
+        } else if (random){
+            Random rng = new Random(System.currentTimeMillis());
+            if (oponentes.size() > 1){
+                alvo = oponentes.get(rng.nextInt(0, (oponentes.size() - 1)));
+            } else {
+                alvo = oponentes.get(0);
+            }
+
         }
 
-        alvo = oponentes.get(escolha - 1);
-        return oponentes.get(escolha - 1); // Retorna -1 pra sair, 0 em diante pra escolha específica
+        return alvo;
     }
 
     // Exibição de cenário de entidade * EXTRAIR
-    public static String displayEntityScenario(Entity... entities){
+    public static void displayEntityScenario(Entity... entities){
+        ArrayList<String> entityScenarios = new ArrayList<>();
         for (Entity entity : entities){
             try {
-                return entity.nome + " | " + entity.vidaAtual + " / " + entity.vidaMaxima + "HP " + entity.statusList + " | " + entity.baseAtk + " | " + entity.armaAtual.getNome() + " (" + entity.armaAtual.getRaridade() + "): " + entity.armaAtual.getAtkExtra() + " ATK ";
+                System.out.println(entity.nome + " | " + entity.vidaAtual + " / " + entity.vidaMaxima + "HP " + entity.statusList + " | " + entity.baseAtk + " | " + entity.armaAtual.getNome() + " (" + entity.armaAtual.getRaridade() + "): " + entity.armaAtual.getAtkExtra() + " ATK ");
 
             } catch (NullPointerException error){
-                return entity.nome + " | " + entity.vidaAtual + " / " + entity.vidaMaxima + "HP " + entity.statusList + " | " + entity.baseAtk + " ATK ";
+                System.out.println(entity.nome + " | " + entity.vidaAtual + " / " + entity.vidaMaxima + "HP " + entity.statusList + " | " + entity.baseAtk + " ATK ");
             }
         }
-        return "";
-    }
-
-    public enum Side {
-        PLAYER, ENEMY
     }
 
     // Turno do combate
-    public static void realizarTurno(Entity actor, Side target){
+    public static void realizarTurno(Entity actor){
         // Reseta o estado de defesa da entidade
         actor.defesa = false;
 
@@ -112,44 +132,45 @@ public class BattleHandler {
 
         // Ação do ator
         if (!actor.actionHandler.checkForIdle()){ // Se a entidade não estiver inativo (ou seja, retornar false)
-            /*if (target == Side.PLAYER){ //
-                actor.defineAction();
-            } else if (target == Side.ENEMY){
-                actor.defineAction();
-            }*/
-
             actor.defineAction(); // Realizar ação. Se o oponente morrer, retorna true.
         }
 
         actor.statusHandler.tickStatus();
+
+        // Tick de habilidade (se possível)
+        actor.tickSpecial("abilityHandler");
     }
 
     // Organização de turnos
+
     public static void battleLoop(){
         // Exibe a numeração de rodada atual
         System.out.println("Rodada: " + BattleHandler.rodadaAtual);
         System.out.println();
-        System.out.println(displayEntityScenario(ordemTurno.toArray(new Entity[0])));
 
         while (jogador.estaVivo() && ordemTurno.size() > 1){
             for(Entity entity : ordemTurno){
                 if (jogador.estaVivo()) {
                     if (entity.estaVivo()){
+                        if(entity.equals(jogador)){
+                            displayEntityScenario(ordemTurno.toArray(new Entity[0]));
+                        }
                         System.out.println("Turno: " + entity);
                         System.out.println();
 
                         if (entity != jogador){
-                            realizarTurno(entity, Side.PLAYER);
+                            realizarTurno(entity);
                         } else {
-                            realizarTurno(entity, Side.ENEMY);
+                            realizarTurno(entity);
                         }
+
                     }
                 } else {
                     break;
                 }
             }
 
-            BattleHandler.adversarios.removeAll(BattleHandler.entidadesDerrotadas);
+            BattleHandler.grupoAdversarios.removeAll(BattleHandler.entidadesDerrotadas);
             BattleHandler.ordemTurno.removeAll(BattleHandler.entidadesDerrotadas);
         }
 

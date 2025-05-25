@@ -6,11 +6,20 @@ abstract class Player extends Entity {
 
     public Player(String nome, Arma armaAtual) {
         super(nome, armaAtual);
+        equipe = Side.PLAYER;
     }
 
     // Helper: Seleção de alvo
     Entity promptTarget(){
-        return BattleHandler.selecaoAlvo(BattleHandler.adversarios);
+        return BattleHandler.selecaoAlvo(BattleHandler.grupoAdversarios, false);
+    }
+
+    // Helper: Ação Especial
+    @Override
+    void tickSpecial(String tipo) {
+        if (tipo.equals("abilityHandler")){
+            abilityHandler.tickCooldownHabilidade();
+        }
     }
 
     public boolean defineAction(){
@@ -65,11 +74,10 @@ class Guerreiro extends Player {
         this.abilityHandler = new AbilityHandler();
     }
 
-
     // Fúria: habilidade ativa da Classe
     class AbilityHandler implements Entity.AbilityHandler {
         protected int cooldownHabilidadeAtual = 0;
-        protected static int cooldownHabilidade = 1;
+        protected static int cooldownHabilidade = 2;
 
         protected Status statusHabilidade = null;
         public boolean usarHabilidade(boolean estado) {
@@ -78,14 +86,13 @@ class Guerreiro extends Player {
                     System.out.println("A habilidade falhou!");
                     return false;
                 }
-                cooldownHabilidadeAtual = cooldownHabilidade;
+                cooldownHabilidadeAtual = cooldownHabilidade + 1; // Soma-se 1 para remover o turno de uso da habilidade da equação
                 statusHabilidade = statusHandler.addStatus("StatusFuria");
-                statusHandler.printStatusMessage(statusHabilidade, "inicio-efeito");
+
             } else if (!estado){ // false indica que a habilidade está sendo desativada
-                statusHandler.printStatusMessage(statusHabilidade, "fim-efeito");
                 statusHabilidade = null;
             }
-            return false;
+            return false; // Sempre retorna false pois não pode matar oponentes
         }
 
         public boolean tickCooldownHabilidade(){
@@ -111,11 +118,10 @@ class Ladino extends Player {
         this.abilityHandler = new AbilityHandler();
     }
 
-
     // Evasão: habilidade ativa da Classe
     class AbilityHandler implements Entity.AbilityHandler {
         protected int cooldownHabilidadeAtual = 0;
-        protected static int cooldownHabilidade = 2;
+        protected static int cooldownHabilidade = 1;
 
         protected Status statusHabilidade = null;
         public boolean usarHabilidade(boolean estado) {
@@ -124,11 +130,9 @@ class Ladino extends Player {
                     System.out.println("A habilidade falhou!");
                     return false;
                 }
-                cooldownHabilidadeAtual = cooldownHabilidade;
+                cooldownHabilidadeAtual = cooldownHabilidade + 1; // Soma-se 1 para remover o turno de uso da habilidade da equação
                 statusHabilidade = statusHandler.addStatus("StatusEvasao");
-                statusHandler.printStatusMessage(statusHabilidade, "inicio-efeito");
             } else if (!estado){ // false indica que a habilidade está sendo desativada
-                statusHandler.printStatusMessage(statusHabilidade, "fim-efeito");
                 statusHabilidade = null;
             }
             return false;
@@ -157,7 +161,6 @@ class Mago extends Player {
         this.abilityHandler = new AbilityHandler();
     }
 
-
     // Grimório: habilidade ativa da Classe
     class AbilityHandler implements Entity.AbilityHandler {
         static Random rng = new Random(System.currentTimeMillis());
@@ -170,7 +173,7 @@ class Mago extends Player {
             if (cooldownHabilidadeAtual > 0) {
                 System.out.println("A habilidade falhou!");
             } else {
-                cooldownHabilidadeAtual = cooldownHabilidade;
+                cooldownHabilidadeAtual = cooldownHabilidade + 1; // Soma-se 1 para remover o turno de uso da habilidade da equação
                 System.out.println("[Grimório] " + nome + " prepara uma magia poderosa...");
 
                 int action = 0;

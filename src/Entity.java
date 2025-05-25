@@ -1,12 +1,11 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 abstract class Entity {
     // Função: Lidar com atributos da entidade
 
     protected Entity self = this;
+    protected Side equipe;
+
     protected HealthHandler healthHandler = new HealthHandler();
     protected DamageHandler damageHandler = new DamageHandler();
     protected ActionHandler actionHandler = new ActionHandler();
@@ -21,6 +20,9 @@ abstract class Entity {
     protected Arma armaAtual = null;
     protected List<Status> statusList = new ArrayList<>();
 
+    public enum Side {
+        PLAYER, ENEMY
+    }
 
     static Scanner input = new Scanner(System.in).useDelimiter("\n");
 
@@ -37,11 +39,14 @@ abstract class Entity {
         // Função: Preparar a Entidade (quando necessário) para lidar com uma habilidade
 
         boolean usarHabilidade(boolean estado);
-        boolean tickCooldownHabilidade();
+        public boolean tickCooldownHabilidade();
     }
 
     // Seleção de ação
     abstract boolean defineAction();
+
+    // Tick de sistema especial
+    abstract void tickSpecial(String tipo);
 
     // Classes auxiliares
     class HealthHandler{
@@ -51,8 +56,19 @@ abstract class Entity {
             double totalModifierRes = 0; // Modificador de resistência total
 
             // Calcular modificador de resistência atual
-            for (Status status : statusList){
+            Iterator<Status> iterator = statusList.iterator();
+
+            while (iterator.hasNext()){
+                Status status = iterator.next();
+
                 totalModifierRes += status.getModifierRes();
+                // [PROC-inicio-danoRecebido] Se o status tiver uma mensagem de ativação...
+                statusHandler.printStatusMessage(status, "PROC-inicio-danoRecebido");
+                if (statusHandler.hasTrigger(status, "RemoveAfterProc")){
+                    // Remove o Status e ativa [fim-efeito]
+                    statusHandler.printStatusMessage(status, "fim-efeito");
+                    iterator.remove();
+                }
             }
 
             // Checar estado de defesa
@@ -66,11 +82,6 @@ abstract class Entity {
             // Limitar resistência a 100%
             if (totalModifierRes > 1){
                 totalModifierRes = 1;
-            }
-
-            // [PROC-inicio-danoRecebido]
-            for (Status status : statusList){
-                statusHandler.printStatusMessage(status, "PROC-início-danoRecebido");
             }
 
             // Aplicar dano
@@ -120,8 +131,6 @@ abstract class Entity {
             }
 
             // Retornar valor final de dano
-            System.out.println(flatAtk);
-            System.out.println((int) ((flatAtk + totalShiftAtk) * totalModifierAtk));
             return (int) ((flatAtk + totalShiftAtk) * totalModifierAtk);
         }
     }
@@ -195,6 +204,11 @@ abstract class Entity {
                 if (Status.class.isAssignableFrom(aClass)){
                     Status addedStatus = (Status) aClass.getDeclaredConstructor().newInstance();
                     statusList.add(addedStatus);
+                    statusHandler.printStatusMessage(addedStatus, "inicio-efeito");
+                    if (statusHandler.hasTrigger(addedStatus, "TriggerOnStart")){
+                        addedStatus.statusTrigger(self, "TriggerOnStart");
+                    }
+
                     return addedStatus;
                 } else {
                     throw new IllegalArgumentException("[DEBUG] A classe indicada não é subclasse de Status");
@@ -211,24 +225,38 @@ abstract class Entity {
             Map<String, String> textoStatus = targetStatus.getTextoStatus();
             if(textoStatus.get(statusKey) != null) {
                 System.out.println((textoStatus.get(statusKey)).replace("%nome%", nome));
-            } else {
-                System.out.println("[DEBUG] Chave de mensagem tem valor nulo.");
             }
         }
 
         // Tick de atributo: A FINALIZAR
         public void tickStatus(){
-            List<Status> removalList = new ArrayList<>();
-            for (Status status : statusList){
-                status.addTurnosDecorridos(); // NÃO FUNCIONANDO
+            Iterator<Status> iterator = statusList.iterator();
+
+            while(iterator.hasNext()){
+                Status status = iterator.next();
+
+                status.addTurnosDecorridos();
 
                 if (status.getTempoRestante() == 0){
                     statusHandler.printStatusMessage(status, "fim-efeito");
-                    removalList.add(status);
-                }
-            }
+                    if (statusHandler.hasTrigger(status, "TriggerOnEnd")){
+                        status.statusTrigger(self, "TriggerOnEnd");
+                    }
 
-            statusList.removeAll(removalList);
+                    iterator.remove();
+                }
+
+            }
+        }
+
+        // Verificar se status possui um trigger específico
+        public boolean hasTrigger(Status status, String triggerName){
+            try{
+                Set<String> triggerSet = new HashSet<>(status.getTriggers());
+                return triggerSet.contains(triggerName); // Retorna true se o trigger existe no Status selecionado
+            } catch (NullPointerException e){
+                return false; // Redundância no retorno de false em caso de erro em Try
+            }
         }
 
         // Tick de atributo
@@ -266,6 +294,10 @@ abstract class Entity {
     // Getters
     public Boolean estaVivo(){
         return vidaAtual > 0;
+    }
+
+    public Side getSide() {
+        return equipe;
     }
 
     // Get & Set: Arma atual

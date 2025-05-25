@@ -7,14 +7,18 @@ public abstract class Enemy extends Entity {
     static Random rng = new Random(System.currentTimeMillis());
     public Enemy(String nome, Arma armaAtual) {
         super(nome, armaAtual);
+        equipe = Side.ENEMY;
     }
+    Player oponente = BattleHandler.jogador;
+
+    abstract void tickSpecial(String tipo);
 
     // Banco de ações e suas chances
-    Map<String, Double> actionBank = Map.ofEntries(
-            Map.entry("atacar", 0.6),
-            Map.entry("defender", 0.3),
-            Map.entry("curar", 0.1)
-    );
+    Map<String, Double> actionBank;
+
+    public void setActionBank(Map<String, Double> actionBank) {
+        this.actionBank = actionBank;
+    }
 
     // Gera ação aleatória dentre disponíveis
     protected String generateAction() {
@@ -49,7 +53,18 @@ class Mob extends Enemy {
         this.vidaAtual = vidaMaxima;
         this.baseAtk = atkBase;
         this.defesa = false;
+
+        setActionBank(Map.ofEntries(
+                Map.entry("atacar", 0.6),
+                Map.entry("defender", 0.3),
+                Map.entry("curar", 0.1)
+        ));
     }
+
+
+
+    // Helper: Ação Especial
+    void tickSpecial(String tipo) {}
 
     // Seleciona ação com base no valor gerado aleatóriamente
     public boolean defineAction(){
@@ -91,27 +106,26 @@ class Mob extends Enemy {
 
 
 class Boss extends Enemy {
-    // Função: delegar atributos e capacidades de inimigos normais
+    // Função: delegar atributos e capacidades de inimigos boss
     protected AbilityHandler abilityHandler;
 
     class AbilityHandler implements Entity.AbilityHandler {
         protected int cooldownHabilidadeAtual = 0;
-        protected static int cooldownHabilidade = 1;
+        protected static int cooldownHabilidade = 4;
 
         protected Status statusHabilidade = null;
         public boolean usarHabilidade(boolean estado) {
+            System.out.println("[DEBUG] CD: " + cooldownHabilidadeAtual + "/" + cooldownHabilidade);
             if (estado){ // true indica que a habilidade está sendo ativada
-                if (cooldownHabilidade > 0) { // Se o cooldown estiver ativo
+                if (cooldownHabilidadeAtual > 0) { // Se o cooldown estiver ativo
                     System.out.println("A habilidade falhou!");
                     return false;
                 }
-                cooldownHabilidade = 4;
+                cooldownHabilidadeAtual = cooldownHabilidade + 1; // Soma-se 1 para remover o turno de uso da habilidade da equação
                 statusHabilidade = statusHandler.addStatus("StatusFrenesi");
-                statusHandler.printStatusMessage(statusHabilidade, "inicio-efeito");
+
             } else if (!estado){ // false indica que a habilidade está sendo desativada
-                statusHandler.printStatusMessage(statusHabilidade, "fim-efeito");
                 statusHabilidade = null;
-                return Game.jogador.healthHandler.handleDanoRecebido(damageHandler.handleDanoAtual(baseAtk * 2, false));
             }
             return false;
         }
@@ -127,15 +141,6 @@ class Boss extends Enemy {
 
     }
 
-    // Alteração no banco de ação
-    Map<String, Double> actionBank = Map.ofEntries(
-            Map.entry("atacar", 0.5),
-            Map.entry("defender", 0.3),
-            Map.entry("curar", 0.1),
-            Map.entry("habilidade", 0.1)
-    );
-
-
     // Construtor simples, sem atributos
     public Boss(String nome, Arma armaAtual, int vidaMaxima, int atkBase) {
         super(nome, armaAtual);
@@ -143,11 +148,26 @@ class Boss extends Enemy {
         this.vidaAtual = vidaMaxima;
         this.baseAtk = atkBase;
         this.defesa = false;
+        this.abilityHandler = new AbilityHandler();
+
+        setActionBank(Map.ofEntries(
+                Map.entry("atacar", 0.5),
+                Map.entry("defender", 0.0),
+                Map.entry("curar", 0.0),
+                Map.entry("habilidade", 0.5)
+        ));
+    }
+
+    // Helper: Ação Especial
+    @Override
+    void tickSpecial(String tipo) {
+        if (tipo.equals("abilityHandler")){
+            abilityHandler.tickCooldownHabilidade();
+        }
     }
 
     // Seleciona ação com base no valor gerado aleatóriamente
     public boolean defineAction(){
-        Player oponente = BattleHandler.jogador;
         switch(generateAction()) {
             case "atacar":
                 return actionHandler.atacar(oponente);

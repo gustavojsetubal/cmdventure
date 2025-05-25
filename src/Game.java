@@ -23,12 +23,13 @@ public class Game {
         {}
     }
 
-    // Game Handler
+    // Construtor
     public Game() {
         this.salaAtual = 1;
     }
 
 
+    // Inicia o loop de jogo
     public void iniciarJogo() {
         System.out.println("-= cmdventure =- \n");
         System.out.println("-= Insira um nome =-");
@@ -73,61 +74,12 @@ public class Game {
     }
 
 
+    // Inicia uma sala e passa responsabilidade para BattleHandler
     public void iniciarSala(){
         BattleHandler.gerarSala();
         BattleHandler.battleLoop();
     }
-        /*// Gerenciar Spawns
-        if (salaAtual % 5 == 0){
-            adversario = Boss.SpawnManager.generateMob(null, salaAtual);
-        } else {
-            adversario = Mob.SpawnManager.generateMob(null, salaAtual);
-        }
-        emBatalha = true;
-
-        // Iniciar batalha
-        System.out.println("\n\n\n-= Sala " + salaAtual + " =-");
-        while (emBatalha){ // Enquanto a sala não estiver completa
-            displayGameScenario(jogador, adversario);
-            if (turnoAtual == Turno.JOGADOR) {
-                // Início de turno
-                jogador.defesa = false;
-                System.out.println("Rodada: " + rodadaAtual);
-                System.out.println();
-
-                //Turno das ações do jogador
-                System.out.println("Turno: " + turnoAtual);
-                System.out.println();
-                // jogador.abilityHandler.tickCooldownHabilidade();
-                if (!jogador.actionHandler.checkForIdle()){ // Se o jogador não estiver inativo (ou seja, retornar false)
-                    if (jogador.defineAction(adversario)){ // Realizar ação. Se o oponente morrer (true)
-                        emBatalha = false; // Encerra o loop de batalha
-                        break;
-                    }
-                }
-                jogador.statusHandler.tickStatus();
-                pressEnterToContinue();
-                turnoAtual = Turno.ADVERSARIO;// Passa para a máquina
-
-            } else {
-                //Turno das ações da máquina
-                adversario.defesa = false;
-                System.out.println("Turno: " + turnoAtual);
-                System.out.println("\n");
-                if (adversario instanceof Boss){
-                    ((Boss) adversario).abilityHandler.tickCooldownHabilidade();
-                }
-                if (!adversario.actionHandler.checkForIdle()){ // Se o adversário não estiver inativo (ou seja, retornar false)
-                    if (adversario.defineAction(jogador)){ // Realizar ação. Se o oponente morrer (true)
-                        break; // Encerra o loop de batalha
-                    }
-                }
-                adversario.statusHandler.tickStatus();
-                pressEnterToContinue();
-                turnoAtual = Turno.JOGADOR; // Volta para o jogador
-                rodadaAtual++;
-            }
-        }
+        /*
 
         // Fim da batalha
         if (jogador.estaVivo()){
