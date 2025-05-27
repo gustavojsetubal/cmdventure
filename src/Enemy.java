@@ -14,23 +14,23 @@ public abstract class Enemy extends Entity {
     abstract void tickSpecial(String tipo);
 
     // Banco de ações e suas chances
-    Map<String, Double> actionBank;
+    Map<String, Double> actionPool;
 
-    public void setActionBank(Map<String, Double> actionBank) {
-        this.actionBank = actionBank;
+    public void setActionPool(Map<String, Double> actionPool) {
+        this.actionPool = actionPool;
     }
 
     // Gera ação aleatória dentre disponíveis
     protected String generateAction() {
         // Valor total de pesos (não precisa resultar em 1)
         float totalPool = 0;
-        for (Double actionChance : this.actionBank.values()){
+        for (Double actionChance : this.actionPool.values()){
             totalPool += actionChance;
         }
 
         // Sorteia ação dentre banco
         double r = rng.nextDouble(0, totalPool);
-        for (Map.Entry<String, Double> action : actionBank.entrySet()){
+        for (Map.Entry<String, Double> action : actionPool.entrySet()){
             if (r < action.getValue()){
                 return action.getKey();
             }
@@ -54,7 +54,7 @@ class Mob extends Enemy {
         this.baseAtk = atkBase;
         this.defesa = false;
 
-        setActionBank(Map.ofEntries(
+        setActionPool(Map.ofEntries(
                 Map.entry("atacar", 0.6),
                 Map.entry("defender", 0.3),
                 Map.entry("curar", 0.1)
@@ -150,11 +150,11 @@ class Boss extends Enemy {
         this.defesa = false;
         this.abilityHandler = new AbilityHandler();
 
-        setActionBank(Map.ofEntries(
+        setActionPool(Map.ofEntries(
                 Map.entry("atacar", 0.5),
-                Map.entry("defender", 0.0),
-                Map.entry("curar", 0.0),
-                Map.entry("habilidade", 0.5)
+                Map.entry("defender", 0.2),
+                Map.entry("curar", 0.1),
+                Map.entry("habilidade", 0.2)
         ));
     }
 

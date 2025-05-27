@@ -18,7 +18,7 @@ public class NameHandler {
             "Katana", "Espada Curta", "Mangual", "Tridente", "Sabre", "Alabarda", "Rapieira"
     ));
 
-    private static List<String> upgradeNameBank = new ArrayList<>(Arrays.asList(
+    private static List<String> blessingNameBank = new ArrayList<>(Arrays.asList(
             "Benção", "Luz", "Aura", "Essência", "Chama",
             "Eco", "Vínculo", "Cântico", "Reflexo", "Vontade",
             "Elo", "Visão", "Sopro", "Mantra", "Ascensão",
@@ -40,7 +40,7 @@ public class NameHandler {
             "Brilhante", "Desgastado", "Venenoso", "Sombrio", "Amaldiçoado"
     ));
 
-    private static List<String> upgradeAdjectiveBank = new ArrayList<>(Arrays.asList(
+    private static List<String> blessingAdjectiveBank = new ArrayList<>(Arrays.asList(
             "Forte", "Gélido", "Eterno", "Radiante", "Sombrio",
             "Celestial", "Ancestral", "Efêmero", "Sagrado", "Profano",
             "Incandescente", "Sereno", "Caótico", "Ígneo", "Místico",
@@ -55,7 +55,7 @@ public class NameHandler {
         return (weaponNameBank.get(rng.nextInt(weaponNameBank.size())) + " " + weaponAdjectiveBank.get(rng.nextInt(weaponAdjectiveBank.size())));
     }
 
-    public static String generateUpgrade(){
-        return (upgradeNameBank.get(rng.nextInt(upgradeNameBank.size())) + " " + upgradeAdjectiveBank.get(rng.nextInt(upgradeAdjectiveBank.size())));
+    public static String generateBlessing(){
+        return (blessingNameBank.get(rng.nextInt(blessingNameBank.size())) + " " + blessingAdjectiveBank.get(rng.nextInt(blessingAdjectiveBank.size())));
     }
 }

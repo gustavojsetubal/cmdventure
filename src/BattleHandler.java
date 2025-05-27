@@ -8,7 +8,7 @@ public class BattleHandler {
     static Random rng = new Random(System.currentTimeMillis());
     static Scanner input = new Scanner(System.in).useDelimiter("\n");
 
-    public static Player jogador = Game.jogador;
+    public static Player jogador = GameHandler.jogador;
     public static ArrayList<Entity> grupoJogador = new ArrayList<>(Arrays.asList(jogador));
     public static ArrayList<Entity> grupoAdversarios = new ArrayList<>();
 
@@ -17,18 +17,14 @@ public class BattleHandler {
     protected static ArrayList<Entity> ordemTurno = new ArrayList<>(); // Lista de todas as entidades no combate, controla ordem de turno da batalha
     protected static ArrayList<Entity> entidadesDerrotadas = new ArrayList<>();
 
-    private static int salaAtual = Game.getSalaAtual(); // Sala atual da masmorra
-    private static int rodadaAtual = 1; // Rodada atual da batalha
-    private static Boolean emBatalha = true; // Estado de combate
-
     public static void gerarSala(){
         // Limpa a ordem de turno pré-existente, adicionando apenas o jogador
         ordemTurno.clear();
         ordemTurno.add(jogador);
 
         // Gera um boss a cada 5 salas
-        if (salaAtual % 1 == 0){
-            grupoAdversarios.add(Boss.SpawnManager.generateMob(null, salaAtual));
+        if (GameHandler.getSalaAtual() % 5 == 0){
+            grupoAdversarios.add(Boss.SpawnManager.generateMob(null, GameHandler.getSalaAtual()));
         }
 
         // Geração de quantia aleatória de inimigos
@@ -48,13 +44,11 @@ public class BattleHandler {
         }
 
         for (int i = 1;i <= genQTD; i++){
-            grupoAdversarios.add(Mob.SpawnManager.generateMob(null, salaAtual));
+            grupoAdversarios.add(Mob.SpawnManager.generateMob(null, GameHandler.getSalaAtual()));
         }
 
         // Adiciona os adversários recém-gerados à ordem de turno
         ordemTurno.addAll(grupoAdversarios);
-
-        emBatalha = true; // Inicia estado de combate
     }
 
     // Seleção de lado de oponente
@@ -141,14 +135,15 @@ public class BattleHandler {
         actor.tickSpecial("abilityHandler");
     }
 
-    // Organização de turnos
-
-    public static void battleLoop(){
-        // Exibe a numeração de rodada atual
-        System.out.println("Rodada: " + BattleHandler.rodadaAtual);
-        System.out.println();
-
+    // Sistema de batalha
+    public static boolean battleLoop(){
+        int rodadaAtual = 1; // Rodada atual da batalha
+        System.out.println("-= Sala: " + GameHandler.getSalaAtual() + " =-");
         while (jogador.estaVivo() && ordemTurno.size() > 1){
+            // Exibe a numeração de rodada atual
+            System.out.println("-= Rodada: " + rodadaAtual + " =-");
+            System.out.println();
+
             for(Entity entity : ordemTurno){
                 if (jogador.estaVivo()) {
                     if (entity.estaVivo()){
@@ -166,12 +161,20 @@ public class BattleHandler {
 
                     }
                 } else {
-                    break;
+                    return false; // Jogador foi derrotado
                 }
             }
 
             BattleHandler.grupoAdversarios.removeAll(BattleHandler.entidadesDerrotadas);
             BattleHandler.ordemTurno.removeAll(BattleHandler.entidadesDerrotadas);
+            rodadaAtual++;
+        }
+
+        // Ao sair do loop de batalha
+        if (jogador.estaVivo()){
+            return true; // Jogador venceu
+        } else {
+            return false; // Redundância: Jogador foi derrotado
         }
 
     }
